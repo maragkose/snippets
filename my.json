@@ -1,0 +1,38 @@
+{
+    "m3ua-associations-sets": {
+        "IPSM1": {
+            "association-set-name": "IPSM1",
+            "m3ua-associations": {
+                "association": {
+                    "1": {
+                        "primary-source-ipv4-addresss": "127.0.0.1"
+                    }
+                }
+            },
+            "network-appearance": "not-in-use"
+        },
+        "IPSM2": {
+            "association-set-name": "IPSM1",
+            "m3ua-associations": {
+                "association": {
+                    "1": {
+                        "primary-source-ipv4-addresss": "127.0.0.1"
+                    }
+                }
+            },
+            "network-appearance": "not-in-use"
+        },
+        "IPSM3": {
+            "association-set-name": "IPSM1",
+            "m3ua-associations": {
+                "association": {
+                    "1": {
+                        "primary-source-ipv4-addresss": "127.0.0.1",
+                        "secondary-source-ipv4-addresss": "127.0.0.1"
+                    }
+                }
+            },
+            "network-appearance": "not-in-use"
+        }
+    }
+}

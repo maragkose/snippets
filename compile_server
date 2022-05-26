@@ -1,0 +1,1 @@
+g++ -std=c++11 -o server ss7_Config_server.cc kv.pb.cc kv.grpc.pb.cc -lgrpc++_reflection -lgrpc++ -lgrpc -lprotobuf -lgpr -lpthread -lz -lcares -lssl -lcrypto -lgflags

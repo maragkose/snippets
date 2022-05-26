@@ -1,0 +1,207 @@
+#include <iostream>
+// back-end
+#include <boost/msm/back/state_machine.hpp>
+//front-end
+#include <boost/msm/front/state_machine_def.hpp>
+
+namespace msm = boost::msm;
+namespace mpl = boost::mpl;
+
+namespace {
+    // events
+    struct start {};
+    struct end_pause {};
+    struct stop {};
+    struct pause {};
+    struct open_close {};
+
+    // A "complicated" event type that carries some data.
+	enum DiskTypeEnum
+    {
+        DISK_CD=0,
+        DISK_DVD=1
+    };
+    struct cd_detected
+    {
+        cd_detected(std::string name, DiskTypeEnum diskType)
+            : name(name),
+            disc_type(diskType)
+        {}
+
+        std::string name;
+        DiskTypeEnum disc_type;
+    };
+
+    // front-end: define the FSM structure 
+    class Application : public msm::front::state_machine_def<Application>
+    {
+    public:
+
+        template <class Event,class FSM>
+        void on_entry(Event const& ,FSM&) 
+        {
+            std::cout << "entering: Player" << std::endl;
+        }
+        template <class Event,class FSM>
+        void on_exit(Event const&,FSM& ) 
+        {
+            std::cout << "leaving: Player" << std::endl;
+        }
+
+        // The list of FSM states
+        struct IDLE : public msm::front::state<> 
+        {
+            // every (optional) entry/exit methods get the event passed.
+            template <class Event,class FSM>
+            void on_entry(Event const&,FSM& ) {std::cout << "entering: IDLE" << std::endl;}
+            template <class Event,class FSM>
+            void on_exit(Event const&,FSM& ) {std::cout << "leaving: IDLE" << std::endl;}
+        };
+        struct WAITING : public msm::front::state<> 
+        {	 
+            template <class Event,class FSM>
+            void on_entry(Event const& ,FSM&) {std::cout << "entering: WAITING" << std::endl;}
+            template <class Event,class FSM>
+            void on_exit(Event const&,FSM& ) {std::cout << "leaving: WAITING" << std::endl;}
+        };
+
+        // sm_ptr still supported but deprecated as functors are a much better way to do the same thing
+        struct Stopped : public msm::front::state<msm::front::default_base_state,msm::front::sm_ptr> 
+        {	 
+            template <class Event,class FSM>
+            void on_entry(Event const& ,FSM&) {std::cout << "entering: Stopped" << std::endl;}
+            template <class Event,class FSM>
+            void on_exit(Event const&,FSM& ) {std::cout << "leaving: Stopped" << std::endl;}
+            void set_sm_ptr(Application* pl)
+            {
+                m_player=pl;
+            }
+            Application* m_player;
+        };
+
+        struct Playing : public msm::front::state<>
+        {
+            template <class Event,class FSM>
+            void on_entry(Event const&,FSM& ) {std::cout << "entering: Playing" << std::endl;}
+            template <class Event,class FSM>
+            void on_exit(Event const&,FSM& ) {std::cout << "leaving: Playing" << std::endl;}
+        };
+
+        // state not defining any entry or exit
+        struct Paused : public msm::front::state<>
+        {
+        };
+
+        // the initial state of the player SM. Must be defined
+        typedef IDLE initial_state;
+
+        // transition actions
+        void start_playback(start const&)       { std::cout << "player::start_playback in " << m_name << std::endl; }
+        void open_drawer(open_close const&)    { std::cout << "player::open_drawer\n"; }
+        void close_drawer(open_close const&)   { std::cout << "player::close_drawer\n"; }
+        void store_cd_info(cd_detected const&) { std::cout << "player::store_cd_info\n"; }
+        void stop_playback(stop const&)        { std::cout << "player::stop_playback\n"; }
+        void pause_playback(pause const&)      { std::cout << "player::pause_playback\n"; }
+        void resume_playback(end_pause const&)      { std::cout << "player::resume_playback\n"; }
+        void stop_and_open(open_close const&)  { std::cout << "player::stop_and_open\n"; }
+        void stopped_again(stop const&)	{std::cout << "player::stopped_again\n";}
+        // guard conditions
+        bool good_disk_format(cd_detected const& evt)
+        {
+            // to test a guard condition, let's say we understand only CDs, not DVD
+            if (evt.disc_type != DISK_CD)
+            {
+                std::cout << "wrong disk, sorry" << std::endl;
+                return false;
+            }
+            return true;
+        }
+        // used to show a transition conflict. This guard will simply deactivate one transition and thus
+        // solve the conflict
+        bool auto_start(cd_detected const&)
+        {
+            return false;
+        }
+
+        typedef Application p; // makes transition table cleaner
+
+        // Transition table for player
+        struct transition_table : mpl::vector<
+            //    Start     Event         Next      Action				 Guard
+            //  +---------+-------------+---------+---------------------+----------------------+
+          a_row < Stopped , start        , Playing , &p::start_playback                         >,
+          a_row < Stopped , open_close  , WAITING    , &p::open_drawer                            >,
+           _row < Stopped , stop        , Stopped                                              >,
+            //  +---------+-------------+---------+---------------------+----------------------+
+          a_row < WAITING    , open_close  , IDLE   , &p::close_drawer                           >,
+            //  +---------+-------------+---------+---------------------+----------------------+
+          a_row < IDLE   , open_close  , WAITING    , &p::open_drawer                            >,
+            row < IDLE   , cd_detected , Stopped , &p::store_cd_info   ,&p::good_disk_format  >,
+            row < IDLE   , cd_detected , Playing , &p::store_cd_info   ,&p::auto_start        >,
+            //  +---------+-------------+---------+---------------------+----------------------+
+          a_row < Playing , stop        , Stopped , &p::stop_playback                          >,
+          a_row < Playing , pause       , Paused  , &p::pause_playback                         >,
+          a_row < Playing , open_close  , WAITING    , &p::stop_and_open                          >,
+            //  +---------+-------------+---------+---------------------+----------------------+
+          a_row < Paused  , end_pause   , Playing , &p::resume_playback                        >,
+          a_row < Paused  , stop        , Stopped , &p::stop_playback                          >,
+          a_row < Paused  , open_close  , WAITING    , &p::stop_and_open                          >
+            //  +---------+-------------+---------+---------------------+----------------------+
+        > {};
+        // Replaces the default no-transition response.
+        template <class FSM,class Event>
+        void no_transition(Event const& e, FSM&,int state)
+        {
+            std::cout << "no transition from state " << state
+                << " on event " << typeid(e).name() << std::endl;
+        }
+
+        private:
+            const std::string m_name = {"JVC"};
+    };
+    // Pick a back-end
+    typedef msm::back::state_machine<Application> player;
+
+    //
+    // Testing utilities.
+    //
+    static char const* const state_names[] = { "Stopped", "WAITING", "IDLE", "Playing", "Paused" };
+    void pstate(player const& p)
+    {
+        std::cout << " -> " << state_names[p.current_state()[0]] << std::endl;
+    }
+
+    void test()
+    {        
+		player p;
+        // needed to start the highest-level SM. This will call on_entry and mark the start of the SM
+        p.start(); 
+        // go to WAITING, call on_exit on IDLE, then action, then on_entry on WAITING
+        p.process_event(open_close()); pstate(p);
+        p.process_event(open_close()); pstate(p);
+        // will be rejected, wrong disk type
+        p.process_event(
+        cd_detected("louie, louie",DISK_DVD)); pstate(p);
+        p.process_event(
+        cd_detected("louie, louie",DISK_CD)); pstate(p);
+	p.process_event(play());
+
+        // at this point, Play is active      
+        p.process_event(pause()); pstate(p);
+        // go back to Playing
+        p.process_event(end_pause());  pstate(p);
+        p.process_event(pause()); pstate(p);
+        p.process_event(stop());  pstate(p);
+        // event leading to the same state
+        // no action method called as it is not present in the transition table
+        p.process_event(stop());  pstate(p);
+        std::cout << "stop fsm" << std::endl;
+        p.stop();
+    }
+}
+
+int main()
+{
+    test();
+    return 0;
+}

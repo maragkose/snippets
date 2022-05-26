@@ -1,0 +1,151 @@
+server.cpp: In constructor ‘session::session(boost::asio::io_service&, unsigned int)’:
+server.cpp:22:30: error: no matching function for call to ‘boost::asio::posix::basic_stream_descriptor<>::basic_stream_descriptor()’
+         m_server_fd(server_fd)
+                              ^
+In file included from /usr/include/boost/asio.hpp:84:0,
+                 from server.cpp:14:
+/usr/include/boost/asio/posix/basic_stream_descriptor.hpp:106:3: note: candidate: boost::asio::posix::basic_stream_descriptor<StreamDescriptorService>::basic_stream_descriptor(boost::asio::posix::basic_stream_descriptor<StreamDescriptorService>&&) [with StreamDescriptorService = boost::asio::posix::stream_descriptor_service]
+   basic_stream_descriptor(basic_stream_descriptor&& other)
+   ^~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/boost/asio/posix/basic_stream_descriptor.hpp:106:3: note:   candidate expects 1 argument, 0 provided
+/usr/include/boost/asio/posix/basic_stream_descriptor.hpp:89:3: note: candidate: boost::asio::posix::basic_stream_descriptor<StreamDescriptorService>::basic_stream_descriptor(boost::asio::io_service&, const native_handle_type&) [with StreamDescriptorService = boost::asio::posix::stream_descriptor_service; boost::asio::posix::basic_stream_descriptor<StreamDescriptorService>::native_handle_type = int]
+   basic_stream_descriptor(boost::asio::io_service& io_service,
+   ^~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/boost/asio/posix/basic_stream_descriptor.hpp:89:3: note:   candidate expects 2 arguments, 0 provided
+/usr/include/boost/asio/posix/basic_stream_descriptor.hpp:71:12: note: candidate: boost::asio::posix::basic_stream_descriptor<StreamDescriptorService>::basic_stream_descriptor(boost::asio::io_service&) [with StreamDescriptorService = boost::asio::posix::stream_descriptor_service]
+   explicit basic_stream_descriptor(boost::asio::io_service& io_service)
+            ^~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/boost/asio/posix/basic_stream_descriptor.hpp:71:12: note:   candidate expects 1 argument, 0 provided
+server.cpp: In member function ‘int session::socket()’:
+server.cpp:27:14: error: ‘m_socket’ was not declared in this scope
+       return m_socket;
+              ^~~~~~~~
+server.cpp:27:14: note: suggested alternative: ‘socket’
+       return m_socket;
+              ^~~~~~~~
+              socket
+server.cpp: In member function ‘void session::start()’:
+server.cpp:31:53: error: ‘client_addr_len’ was not declared in this scope
+         m_socket_fd = accept(m_server_fd, &m_addr, &client_addr_len);
+                                                     ^~~~~~~~~~~~~~~
+server.cpp:31:53: note: suggested alternative: ‘in_addr_t’
+         m_socket_fd = accept(m_server_fd, &m_addr, &client_addr_len);
+                                                     ^~~~~~~~~~~~~~~
+                                                     in_addr_t
+server.cpp:33:17: error: no matching function for call to ‘session::do_read()’
+         do_read();
+                 ^
+server.cpp:36:10: note: candidate: void session::do_read(const boost::system::error_code&, size_t)
+     void do_read(const boost::system::error_code& error, size_t bytes_transferred) {
+          ^~~~~~~
+server.cpp:36:10: note:   candidate expects 2 arguments, 0 provided
+server.cpp: In member function ‘void session::do_read(const boost::system::error_code&, size_t)’:
+server.cpp:40:9: error: ‘m_socket_descriptor’ was not declared in this scope
+         m_socket_descriptor.async_read_some(boost::asio::buffer(m_data, max_length),
+         ^~~~~~~~~~~~~~~~~~~
+server.cpp:40:9: note: suggested alternative: ‘m_client_descriptor’
+         m_socket_descriptor.async_read_some(boost::asio::buffer(m_data, max_length),
+         ^~~~~~~~~~~~~~~~~~~
+         m_client_descriptor
+server.cpp: In lambda function:
+server.cpp:43:36: error: no matching function for call to ‘session::do_write(std::size_t&)’
+                     do_write(length);
+                                    ^
+server.cpp:48:10: note: candidate: void session::do_write(const boost::system::error_code&)
+     void do_write(const boost::system::error_code& error) {
+          ^~~~~~~~
+server.cpp:48:10: note:   no known conversion for argument 1 from ‘std::size_t {aka long unsigned int}’ to ‘const boost::system::error_code&’
+server.cpp: In member function ‘void session::do_write(const boost::system::error_code&)’:
+server.cpp:50:9: error: ‘m_socket_descriptor’ was not declared in this scope
+         m_socket_descriptor.async_write(socket_, boost::asio::buffer(data_, length),
+         ^~~~~~~~~~~~~~~~~~~
+server.cpp:50:9: note: suggested alternative: ‘m_client_descriptor’
+         m_socket_descriptor.async_write(socket_, boost::asio::buffer(data_, length),
+         ^~~~~~~~~~~~~~~~~~~
+         m_client_descriptor
+server.cpp:50:41: error: ‘socket_’ was not declared in this scope
+         m_socket_descriptor.async_write(socket_, boost::asio::buffer(data_, length),
+                                         ^~~~~~~
+server.cpp:50:41: note: suggested alternative: ‘socket’
+         m_socket_descriptor.async_write(socket_, boost::asio::buffer(data_, length),
+                                         ^~~~~~~
+                                         socket
+server.cpp:50:70: error: ‘data_’ was not declared in this scope
+         m_socket_descriptor.async_write(socket_, boost::asio::buffer(data_, length),
+                                                                      ^~~~~
+server.cpp:50:70: note: suggested alternative: ‘atan’
+         m_socket_descriptor.async_write(socket_, boost::asio::buffer(data_, length),
+                                                                      ^~~~~
+                                                                      atan
+server.cpp:50:77: error: ‘length’ was not declared in this scope
+         m_socket_descriptor.async_write(socket_, boost::asio::buffer(data_, length),
+                                                                             ^~~~~~
+server.cpp:50:77: note: suggested alternative: ‘sendto’
+         m_socket_descriptor.async_write(socket_, boost::asio::buffer(data_, length),
+                                                                             ^~~~~~
+                                                                             sendto
+server.cpp: In lambda function:
+server.cpp:55:21: error: no matching function for call to ‘session::do_read()’
+             do_read();
+                     ^
+server.cpp:36:10: note: candidate: void session::do_read(const boost::system::error_code&, size_t)
+     void do_read(const boost::system::error_code& error, size_t bytes_transferred) {
+          ^~~~~~~
+server.cpp:36:10: note:   candidate expects 2 arguments, 0 provided
+server.cpp: In constructor ‘server::server(boost::asio::io_service&, short int)’:
+server.cpp:79:5: error: expected identifier before ‘{’ token
+     {
+     ^
+server.cpp:79:5: error: no matching function for call to ‘boost::asio::posix::basic_stream_descriptor<>::basic_stream_descriptor()’
+In file included from /usr/include/boost/asio.hpp:84:0,
+                 from server.cpp:14:
+/usr/include/boost/asio/posix/basic_stream_descriptor.hpp:106:3: note: candidate: boost::asio::posix::basic_stream_descriptor<StreamDescriptorService>::basic_stream_descriptor(boost::asio::posix::basic_stream_descriptor<StreamDescriptorService>&&) [with StreamDescriptorService = boost::asio::posix::stream_descriptor_service]
+   basic_stream_descriptor(basic_stream_descriptor&& other)
+   ^~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/boost/asio/posix/basic_stream_descriptor.hpp:106:3: note:   candidate expects 1 argument, 0 provided
+/usr/include/boost/asio/posix/basic_stream_descriptor.hpp:89:3: note: candidate: boost::asio::posix::basic_stream_descriptor<StreamDescriptorService>::basic_stream_descriptor(boost::asio::io_service&, const native_handle_type&) [with StreamDescriptorService = boost::asio::posix::stream_descriptor_service; boost::asio::posix::basic_stream_descriptor<StreamDescriptorService>::native_handle_type = int]
+   basic_stream_descriptor(boost::asio::io_service& io_service,
+   ^~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/boost/asio/posix/basic_stream_descriptor.hpp:89:3: note:   candidate expects 2 arguments, 0 provided
+/usr/include/boost/asio/posix/basic_stream_descriptor.hpp:71:12: note: candidate: boost::asio::posix::basic_stream_descriptor<StreamDescriptorService>::basic_stream_descriptor(boost::asio::io_service&) [with StreamDescriptorService = boost::asio::posix::stream_descriptor_service]
+   explicit basic_stream_descriptor(boost::asio::io_service& io_service)
+            ^~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/boost/asio/posix/basic_stream_descriptor.hpp:71:12: note:   candidate expects 1 argument, 0 provided
+server.cpp:83:32: error: ‘ADDR_FAMILY’ was not declared in this scope
+         if((server_fd = socket(ADDR_FAMILY, SOCK_TYPE, PROTO)) == -1) {
+                                ^~~~~~~~~~~
+server.cpp:83:32: note: suggested alternative: ‘EAI_FAMILY’
+         if((server_fd = socket(ADDR_FAMILY, SOCK_TYPE, PROTO)) == -1) {
+                                ^~~~~~~~~~~
+                                EAI_FAMILY
+server.cpp:83:45: error: ‘SOCK_TYPE’ was not declared in this scope
+         if((server_fd = socket(ADDR_FAMILY, SOCK_TYPE, PROTO)) == -1) {
+                                             ^~~~~~~~~
+server.cpp:83:45: note: suggested alternative: ‘SO_TYPE’
+         if((server_fd = socket(ADDR_FAMILY, SOCK_TYPE, PROTO)) == -1) {
+                                             ^~~~~~~~~
+                                             SO_TYPE
+server.cpp:83:56: error: ‘PROTO’ was not declared in this scope
+         if((server_fd = socket(ADDR_FAMILY, SOCK_TYPE, PROTO)) == -1) {
+                                                        ^~~~~
+server.cpp:83:56: note: suggested alternative: ‘EPROTO’
+         if((server_fd = socket(ADDR_FAMILY, SOCK_TYPE, PROTO)) == -1) {
+                                                        ^~~~~
+                                                        EPROTO
+server.cpp:89:32: error: ‘ADDR_FAMILY’ was not declared in this scope
+         bind_addr.sin_family = ADDR_FAMILY;
+                                ^~~~~~~~~~~
+server.cpp:89:32: note: suggested alternative: ‘EAI_FAMILY’
+         bind_addr.sin_family = ADDR_FAMILY;
+                                ^~~~~~~~~~~
+                                EAI_FAMILY
+server.cpp:96:30: error: ‘SERVER_LISTEN_QUEUE_SIZE’ was not declared in this scope
+         if(listen(server_fd, SERVER_LISTEN_QUEUE_SIZE) != 0) {
+                              ^~~~~~~~~~~~~~~~~~~~~~~~
+server.cpp:102:9: error: ‘do_accept’ was not declared in this scope
+         do_accept();
+         ^~~~~~~~~
+server.cpp:102:9: note: suggested alternative: ‘accept’
+         do_accept();
+         ^~~~~~~~~
+         accept

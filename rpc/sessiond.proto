@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package sessiond;
+
+// The greeting service definition.
+service Watch {
+  rpc watchKill (stream sessionRequest) returns (stream sessionResponse) {}
+}
+
+// The request message containing needed session data  
+message sessionRequest {
+  string username = 1;
+  string session_id = 2;
+  string watch_duration = 3;
+}
+
+// A response message containing session data 
+message sessionResponse {
+  string username = 1;
+  string session_id = 2;
+}
+
+

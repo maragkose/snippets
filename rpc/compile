@@ -1,0 +1,2 @@
+g++ -std=c++11 -o s sessiond.pb.cc sessiond.grpc.pb.cc server.cc -lgrpc++ -lpthread -lprotobuf -lgrpc
+

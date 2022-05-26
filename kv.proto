@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package ss7config;
+
+service Config {
+
+    rpc GetConfig(Empty) returns (ss7Config) {}
+}
+
+message Empty {}
+
+message KVs {
+    map <string, string> kv = 1;
+}
+
+message ConfigItem {
+    enum change_type {
+        NEW = 0;
+        MODIFIED =1;
+    }
+    string key = 1;
+    KVs parent_fields = 2;
+    map<string, KVs> children_fields = 3;
+}
+message ConfigGroup {
+    map<string,  ConfigItem> config_items =1;
+}
+message ss7Config {
+    map<string, ConfigGroup> ss7_config = 1;
+}
+message Event {
+    enum EventType {
+        HSET = 0;
+        SET = 1;
+        ADD = 2;
+        DEL = 3;
+    }
+    EventType event_type = 1;
+    ConfigItem config_item = 2;
+}
+
