@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package HW;
+
+service HelloWorld {
+  rpc Chat(stream HelloNote) returns (stream HelloNote) {}
+}
+
+message HelloNote {
+  string message = 1;
+}
