@@ -7,7 +7,6 @@
 #include "hello_world.pb.h"
 
 #include <functional>
-#include <grpc/impl/codegen/port_platform.h>
 #include <grpcpp/impl/codegen/async_generic_service.h>
 #include <grpcpp/impl/codegen/async_stream.h>
 #include <grpcpp/impl/codegen/async_unary_call.h>
@@ -45,30 +44,22 @@ class HelloWorld final {
     std::unique_ptr< ::grpc::ClientAsyncReaderWriterInterface< ::HW::HelloNote, ::HW::HelloNote>> PrepareAsyncChat(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncReaderWriterInterface< ::HW::HelloNote, ::HW::HelloNote>>(PrepareAsyncChatRaw(context, cq));
     }
-    class experimental_async_interface {
+    class async_interface {
      public:
-      virtual ~experimental_async_interface() {}
-      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
+      virtual ~async_interface() {}
       virtual void Chat(::grpc::ClientContext* context, ::grpc::ClientBidiReactor< ::HW::HelloNote,::HW::HelloNote>* reactor) = 0;
-      #else
-      virtual void Chat(::grpc::ClientContext* context, ::grpc::experimental::ClientBidiReactor< ::HW::HelloNote,::HW::HelloNote>* reactor) = 0;
-      #endif
     };
-    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-    typedef class experimental_async_interface async_interface;
-    #endif
-    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-    async_interface* async() { return experimental_async(); }
-    #endif
-    virtual class experimental_async_interface* experimental_async() { return nullptr; }
-  private:
+    typedef class async_interface experimental_async_interface;
+    virtual class async_interface* async() { return nullptr; }
+    class async_interface* experimental_async() { return async(); }
+   private:
     virtual ::grpc::ClientReaderWriterInterface< ::HW::HelloNote, ::HW::HelloNote>* ChatRaw(::grpc::ClientContext* context) = 0;
     virtual ::grpc::ClientAsyncReaderWriterInterface< ::HW::HelloNote, ::HW::HelloNote>* AsyncChatRaw(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq, void* tag) = 0;
     virtual ::grpc::ClientAsyncReaderWriterInterface< ::HW::HelloNote, ::HW::HelloNote>* PrepareAsyncChatRaw(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq) = 0;
   };
   class Stub final : public StubInterface {
    public:
-    Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel);
+    Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
     std::unique_ptr< ::grpc::ClientReaderWriter< ::HW::HelloNote, ::HW::HelloNote>> Chat(::grpc::ClientContext* context) {
       return std::unique_ptr< ::grpc::ClientReaderWriter< ::HW::HelloNote, ::HW::HelloNote>>(ChatRaw(context));
     }
@@ -78,25 +69,21 @@ class HelloWorld final {
     std::unique_ptr<  ::grpc::ClientAsyncReaderWriter< ::HW::HelloNote, ::HW::HelloNote>> PrepareAsyncChat(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncReaderWriter< ::HW::HelloNote, ::HW::HelloNote>>(PrepareAsyncChatRaw(context, cq));
     }
-    class experimental_async final :
-      public StubInterface::experimental_async_interface {
+    class async final :
+      public StubInterface::async_interface {
      public:
-      #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
       void Chat(::grpc::ClientContext* context, ::grpc::ClientBidiReactor< ::HW::HelloNote,::HW::HelloNote>* reactor) override;
-      #else
-      void Chat(::grpc::ClientContext* context, ::grpc::experimental::ClientBidiReactor< ::HW::HelloNote,::HW::HelloNote>* reactor) override;
-      #endif
      private:
       friend class Stub;
-      explicit experimental_async(Stub* stub): stub_(stub) { }
+      explicit async(Stub* stub): stub_(stub) { }
       Stub* stub() { return stub_; }
       Stub* stub_;
     };
-    class experimental_async_interface* experimental_async() override { return &async_stub_; }
+    class async* async() override { return &async_stub_; }
 
    private:
     std::shared_ptr< ::grpc::ChannelInterface> channel_;
-    class experimental_async async_stub_{this};
+    class async async_stub_{this};
     ::grpc::ClientReaderWriter< ::HW::HelloNote, ::HW::HelloNote>* ChatRaw(::grpc::ClientContext* context) override;
     ::grpc::ClientAsyncReaderWriter< ::HW::HelloNote, ::HW::HelloNote>* AsyncChatRaw(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq, void* tag) override;
     ::grpc::ClientAsyncReaderWriter< ::HW::HelloNote, ::HW::HelloNote>* PrepareAsyncChatRaw(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq) override;
@@ -132,27 +119,17 @@ class HelloWorld final {
   };
   typedef WithAsyncMethod_Chat<Service > AsyncService;
   template <class BaseClass>
-  class ExperimentalWithCallbackMethod_Chat : public BaseClass {
+  class WithCallbackMethod_Chat : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    ExperimentalWithCallbackMethod_Chat() {
-    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      ::grpc::Service::
-    #else
-      ::grpc::Service::experimental().
-    #endif
-        MarkMethodCallback(0,
-          new ::grpc_impl::internal::CallbackBidiHandler< ::HW::HelloNote, ::HW::HelloNote>(
+    WithCallbackMethod_Chat() {
+      ::grpc::Service::MarkMethodCallback(0,
+          new ::grpc::internal::CallbackBidiHandler< ::HW::HelloNote, ::HW::HelloNote>(
             [this](
-    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-                   ::grpc::CallbackServerContext*
-    #else
-                   ::grpc::experimental::CallbackServerContext*
-    #endif
-                     context) { return this->Chat(context); }));
+                   ::grpc::CallbackServerContext* context) { return this->Chat(context); }));
     }
-    ~ExperimentalWithCallbackMethod_Chat() override {
+    ~WithCallbackMethod_Chat() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -160,20 +137,12 @@ class HelloWorld final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerBidiReactor< ::HW::HelloNote, ::HW::HelloNote>* Chat(
       ::grpc::CallbackServerContext* /*context*/)
-    #else
-    virtual ::grpc::experimental::ServerBidiReactor< ::HW::HelloNote, ::HW::HelloNote>* Chat(
-      ::grpc::experimental::CallbackServerContext* /*context*/)
-    #endif
       { return nullptr; }
   };
-  #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-  typedef ExperimentalWithCallbackMethod_Chat<Service > CallbackService;
-  #endif
-
-  typedef ExperimentalWithCallbackMethod_Chat<Service > ExperimentalCallbackService;
+  typedef WithCallbackMethod_Chat<Service > CallbackService;
+  typedef CallbackService ExperimentalCallbackService;
   template <class BaseClass>
   class WithGenericMethod_Chat : public BaseClass {
    private:
@@ -212,27 +181,17 @@ class HelloWorld final {
     }
   };
   template <class BaseClass>
-  class ExperimentalWithRawCallbackMethod_Chat : public BaseClass {
+  class WithRawCallbackMethod_Chat : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
-    ExperimentalWithRawCallbackMethod_Chat() {
-    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-      ::grpc::Service::
-    #else
-      ::grpc::Service::experimental().
-    #endif
-        MarkMethodRawCallback(0,
-          new ::grpc_impl::internal::CallbackBidiHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+    WithRawCallbackMethod_Chat() {
+      ::grpc::Service::MarkMethodRawCallback(0,
+          new ::grpc::internal::CallbackBidiHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
-    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
-                   ::grpc::CallbackServerContext*
-    #else
-                   ::grpc::experimental::CallbackServerContext*
-    #endif
-                     context) { return this->Chat(context); }));
+                   ::grpc::CallbackServerContext* context) { return this->Chat(context); }));
     }
-    ~ExperimentalWithRawCallbackMethod_Chat() override {
+    ~WithRawCallbackMethod_Chat() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
@@ -240,13 +199,8 @@ class HelloWorld final {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    #ifdef GRPC_CALLBACK_API_NONEXPERIMENTAL
     virtual ::grpc::ServerBidiReactor< ::grpc::ByteBuffer, ::grpc::ByteBuffer>* Chat(
       ::grpc::CallbackServerContext* /*context*/)
-    #else
-    virtual ::grpc::experimental::ServerBidiReactor< ::grpc::ByteBuffer, ::grpc::ByteBuffer>* Chat(
-      ::grpc::experimental::CallbackServerContext* /*context*/)
-    #endif
       { return nullptr; }
   };
   typedef Service StreamedUnaryService;

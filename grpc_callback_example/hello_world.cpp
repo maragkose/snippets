@@ -6,28 +6,23 @@
 #include <string>
 #include <thread>
 
-#include <grpc/grpc.h>
-#include <grpcpp/security/server_credentials.h>
-#include <grpcpp/server.h>
-#include <grpcpp/server_builder.h>
-#include <grpcpp/server_context.h>
+#include <grpcpp/grpcpp.h>
+#include <grpcpp/ext/proto_server_reflection_plugin.h>
 #include "hello_world.grpc.pb.h"
 
 using grpc::CallbackServerContext;
 using grpc::Server;
 using grpc::ServerBuilder;
+using grpc::ServerBidiReactor;
 using grpc::Status;
 using HW::HelloNote;
+using HW::HelloWorld;
 using std::chrono::system_clock;
-
 
 class HelloWorldImpl final : public HelloWorld::CallbackService {
  public:
-  explicit HelloWorldImpl() {
-  }
 
-
-  grpc::ServerBidiReactor<HelloNote, HelloNote>* RouteChat(CallbackServerContext* context) override {
+  grpc::ServerBidiReactor<HelloNote, HelloNote>* Chat(CallbackServerContext* context) override {
 
     class Chatter : public grpc::ServerBidiReactor<HelloNote, HelloNote> {
      public:
@@ -78,14 +73,13 @@ class HelloWorldImpl final : public HelloWorld::CallbackService {
   }
 
  private:
-  std::vector<Feature> feature_list_;
   absl::Mutex mu_;
   std::vector<HelloNote> received_notes_ ABSL_GUARDED_BY(mu_);
 };
 
 void RunServer() {
   std::string server_address("0.0.0.0:50051");
-  HelloWorldImpl service();
+  HelloWorldImpl service;
 
   ServerBuilder builder;
   builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());

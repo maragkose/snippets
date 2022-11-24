@@ -27,28 +27,28 @@ static const char* HelloWorld_method_names[] = {
 
 std::unique_ptr< HelloWorld::Stub> HelloWorld::NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options) {
   (void)options;
-  std::unique_ptr< HelloWorld::Stub> stub(new HelloWorld::Stub(channel));
+  std::unique_ptr< HelloWorld::Stub> stub(new HelloWorld::Stub(channel, options));
   return stub;
 }
 
-HelloWorld::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel)
-  : channel_(channel), rpcmethod_Chat_(HelloWorld_method_names[0], ::grpc::internal::RpcMethod::BIDI_STREAMING, channel)
+HelloWorld::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options)
+  : channel_(channel), rpcmethod_Chat_(HelloWorld_method_names[0], options.suffix_for_stats(),::grpc::internal::RpcMethod::BIDI_STREAMING, channel)
   {}
 
 ::grpc::ClientReaderWriter< ::HW::HelloNote, ::HW::HelloNote>* HelloWorld::Stub::ChatRaw(::grpc::ClientContext* context) {
-  return ::grpc_impl::internal::ClientReaderWriterFactory< ::HW::HelloNote, ::HW::HelloNote>::Create(channel_.get(), rpcmethod_Chat_, context);
+  return ::grpc::internal::ClientReaderWriterFactory< ::HW::HelloNote, ::HW::HelloNote>::Create(channel_.get(), rpcmethod_Chat_, context);
 }
 
-void HelloWorld::Stub::experimental_async::Chat(::grpc::ClientContext* context, ::grpc::experimental::ClientBidiReactor< ::HW::HelloNote,::HW::HelloNote>* reactor) {
-  ::grpc_impl::internal::ClientCallbackReaderWriterFactory< ::HW::HelloNote,::HW::HelloNote>::Create(stub_->channel_.get(), stub_->rpcmethod_Chat_, context, reactor);
+void HelloWorld::Stub::async::Chat(::grpc::ClientContext* context, ::grpc::ClientBidiReactor< ::HW::HelloNote,::HW::HelloNote>* reactor) {
+  ::grpc::internal::ClientCallbackReaderWriterFactory< ::HW::HelloNote,::HW::HelloNote>::Create(stub_->channel_.get(), stub_->rpcmethod_Chat_, context, reactor);
 }
 
 ::grpc::ClientAsyncReaderWriter< ::HW::HelloNote, ::HW::HelloNote>* HelloWorld::Stub::AsyncChatRaw(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq, void* tag) {
-  return ::grpc_impl::internal::ClientAsyncReaderWriterFactory< ::HW::HelloNote, ::HW::HelloNote>::Create(channel_.get(), cq, rpcmethod_Chat_, context, true, tag);
+  return ::grpc::internal::ClientAsyncReaderWriterFactory< ::HW::HelloNote, ::HW::HelloNote>::Create(channel_.get(), cq, rpcmethod_Chat_, context, true, tag);
 }
 
 ::grpc::ClientAsyncReaderWriter< ::HW::HelloNote, ::HW::HelloNote>* HelloWorld::Stub::PrepareAsyncChatRaw(::grpc::ClientContext* context, ::grpc::CompletionQueue* cq) {
-  return ::grpc_impl::internal::ClientAsyncReaderWriterFactory< ::HW::HelloNote, ::HW::HelloNote>::Create(channel_.get(), cq, rpcmethod_Chat_, context, false, nullptr);
+  return ::grpc::internal::ClientAsyncReaderWriterFactory< ::HW::HelloNote, ::HW::HelloNote>::Create(channel_.get(), cq, rpcmethod_Chat_, context, false, nullptr);
 }
 
 HelloWorld::Service::Service() {
@@ -57,8 +57,8 @@ HelloWorld::Service::Service() {
       ::grpc::internal::RpcMethod::BIDI_STREAMING,
       new ::grpc::internal::BidiStreamingHandler< HelloWorld::Service, ::HW::HelloNote, ::HW::HelloNote>(
           [](HelloWorld::Service* service,
-             ::grpc_impl::ServerContext* ctx,
-             ::grpc_impl::ServerReaderWriter<::HW::HelloNote,
+             ::grpc::ServerContext* ctx,
+             ::grpc::ServerReaderWriter<::HW::HelloNote,
              ::HW::HelloNote>* stream) {
                return service->Chat(ctx, stream);
              }, this)));
