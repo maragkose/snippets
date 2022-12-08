@@ -1,34 +1,15 @@
-#include <boost/asio.hpp>
-#include <chrono>
+#include "EventScheduler.hpp"
 #include <iostream>
 
-using namespace boost::asio;
-
-int main()
-{
-  io_context ioc;
-
-  // Create a deadline_timer that expires from now
-  deadline_timer timer{ioc, std::chrono::seconds(5)};
-
-  // Start an asynchronous wait on the timer
-  timer.async_wait([](const boost::system::error_code& error)
-  {
-    if (error)
-    {
-      // The timer was cancelled
-      std::cout << "Timer was cancelled" << std::endl;
-    }
-    else
-    {
-      // The timer expired
-      std::cout << "Timer expired" << std::endl;
-    }
-  });
-
-  // Run the io_context loop
-  ioc.run();
-
-  return 0;
+void call (EventScheduler & scheduler) {
+    EventScheduler::invoke(scheduler, [&scheduler](){ std::cout << "Hello with delay!" << std::endl; call(scheduler);}, 5000);
 }
 
+int main(int argc, char *argv[])
+{
+    EventScheduler scheduler;
+    scheduler.start();
+    EventScheduler::invoke(scheduler, [](){ std::cout << "Hello!" << std::endl; });
+    call(scheduler);
+    for(;;){}
+}
