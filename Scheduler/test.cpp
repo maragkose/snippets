@@ -2,7 +2,7 @@
 #include <iostream>
 
 void call (EventScheduler & scheduler) {
-    EventScheduler::invoke(scheduler, [&scheduler](){ std::cout << "Hello with delay!" << std::endl; call(scheduler);}, 5000);
+    EventScheduler::invoke(scheduler, [&scheduler](){ std::cout << "Hello with delay!" << std::endl; call(scheduler);}, 3000);
 }
 
 int main(int argc, char *argv[])

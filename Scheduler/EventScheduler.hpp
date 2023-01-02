@@ -5,6 +5,13 @@
 #include <thread>
 #include <iostream>
 
+void timer_deleter(boost::asio::steady_timer* p)
+{
+    std::cout << "Deleted timer! " << std::endl;
+    p->cancel();
+    delete p;
+}
+
 /*!  \class 
 *    \brief Brief class description
 *           Detailed description}
@@ -92,15 +99,18 @@ inline void EventScheduler::stop() {
 //-------------------------------------------
 inline void EventScheduler::executeTask(std::function<void()> task, int delay) {
 //-------------------------------------------
-    auto timer = new boost::asio::steady_timer(_io_service, std::chrono::milliseconds(delay));
+    auto timer = std::make_shared<boost::asio::steady_timer>(_io_service, std::chrono::milliseconds(delay));
+    //std::shared_ptr<boost::asio::steady_timer> timer(new boost::asio::steady_timer(_io_service, std::chrono::milliseconds(delay)), timer_deleter);
 
+    // 
+    // We capture the timer shared_ptr to pass ownership so it will be deleted as soon as
+    // the timer expires and executes the lambda
+    //
     timer->async_wait([this, task, timer](const boost::system::error_code& error) {
         if (!error) {
             task();
-            delete timer;
         } else {
             std::cout << "expired" << std::endl;
-            delete timer;
         }
     });
 }
