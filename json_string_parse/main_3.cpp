@@ -1,7 +1,9 @@
-#include <string>
-#include <map>
-#include <algorithm>
+
 #include <iostream>
+#include <map>
+#include <string>
+#include <algorithm>
+
 
 std::map<std::string, std::string> parse_json(const std::string& json) {
     std::map<std::string, std::string> result;
@@ -40,9 +42,7 @@ std::map<std::string, std::string> parse_json(const std::string& json) {
         }
 
         // Extract the value
-        //std::string value = json.substr(pos + 1, value_end - pos - 1);
-	std::string value = json.substr(pos + 2, value_end - pos - 3);
-
+        std::string value = json.substr(pos + 1, value_end - pos - 1);
 
         // Trim leading and trailing whitespace from the value
         value.erase(value.begin(), std::find_if(value.begin(), value.end(), [](int ch) {
@@ -51,7 +51,7 @@ std::map<std::string, std::string> parse_json(const std::string& json) {
         value.erase(std::find_if(value.rbegin(), value.rend(), [](int ch) {
             return !std::isspace(ch);
         }).base(), value.end());
-
+        value.erase(std::remove(value.begin(), value.end(), '\"'), value.end());  // remove the quotes from the value
         // Store the key-value pair in the map
         result[key] = value;
 
@@ -63,14 +63,12 @@ std::map<std::string, std::string> parse_json(const std::string& json) {
 }
 
 int main() {
-    std::string json = R"({
-        "key1": "value1",
-        "key2": "value2",
-        "key3": "value3"
-    })";
+    std::string input = "{\"key1\":\"value1\", \"key2\":\"value2\"}";
+    std::map<std::string, std::string> output = parse_json(input);
 
-    auto result = parse_json(json);
-    for (const auto& pair : result) {
-        std::cout << pair.first << ": " << pair.second << std::endl;
+    for (const auto& [key, value] : output) {
+        std::cout << key << ": " << value << std::endl;
     }
+    return 0;
 }
+

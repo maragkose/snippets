@@ -34,7 +34,7 @@ public:
 
 private:
 
-    void                                        executeTask(std::function<void()> task, int delay);
+    void                                        executeTask(const std::function<void()> & task, int delay);
 
     boost::asio::io_service                     _io_service;
     std::unique_ptr<std::thread>                _thread;
@@ -97,7 +97,7 @@ inline void EventScheduler::stop() {
 }
 
 //-------------------------------------------
-inline void EventScheduler::executeTask(std::function<void()> task, int delay) {
+inline void EventScheduler::executeTask(const std::function<void()>& task, int delay) {
 //-------------------------------------------
     auto timer = std::make_shared<boost::asio::steady_timer>(_io_service, std::chrono::milliseconds(delay));
     //std::shared_ptr<boost::asio::steady_timer> timer(new boost::asio::steady_timer(_io_service, std::chrono::milliseconds(delay)), timer_deleter);
