@@ -41,7 +41,7 @@ class HelloWorldImpl final : public HelloWorld::CallbackService {
           // list of nodes we're going to send, then we'll grab the lock
           // again to append the received note to the existing vector.
           mu_->Lock();
-          std::cout << "OnReadDone" << std::endl;
+          std::cout << "OnReadDone: " << note_.message() << std::endl;
           mu_->Unlock();
           notes_iterator_ = to_send_notes_.begin();
           NextWrite();
