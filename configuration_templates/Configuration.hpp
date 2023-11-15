@@ -1,0 +1,78 @@
+#include <map>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <boost/any.hpp>
+
+std::vector<std::string> split(const std::string& str, char delimiter) {
+    std::vector<std::string> result;
+    std::stringstream ss(str);
+    std::string item;
+    while (std::getline(ss, item, delimiter)) {
+        result.push_back(item);
+    }
+    return result;
+}
+
+bool is_int(const std::string& s) {
+    if(s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false ;
+    char * p ;
+    strtol(s.c_str(), &p, 10) ;
+    return (*p == 0) ;
+}
+
+class Configuration {
+public:
+    // Constructor
+    Configuration() {}
+
+    // Accessors
+    template <typename T>
+    T get(const std::string& key) {
+        return boost::any_cast<T>(map_[key]);
+    }
+    // Mutators
+    template <typename T>
+    void set(const std::string& key, T value) {
+        map_[key] = value;
+    }
+
+    // File reading
+    void read_file(const std::string& file_path) {
+        std::ifstream file(file_path);
+        std::string line;
+        while (std::getline(file, line)) {
+            auto delimiter_pos = line.find("=");
+            std::string key = line.substr(0, delimiter_pos);
+            std::string value_str = line.substr(delimiter_pos + 1);
+
+            if (value_str.find(",") != std::string::npos) {
+                // List values
+                std::vector<std::string> values = split(value_str, ',');
+                if (is_int(values[0])) {
+                    std::vector<int> int_values;
+                    for (const auto& v : values) {
+                        int_values.push_back(std::stoi(v));
+                    }
+                    set<std::vector<int>>(key, int_values);
+                } else {
+                    set<std::vector<std::string>>(key, values);
+                }
+            } else {
+                // Single value
+                if (is_int(value_str)) {
+                    set<int>(key, std::stoi(value_str));
+                } else if (value_str == "true" || value_str == "false") {
+                    set<bool>(key, value_str == "true");
+                } else {
+                    set<std::string>(key, value_str);
+                }
+            }
+        }
+    }
+
+private:
+    std::map<std::string, boost::any> map_;
+};
+
