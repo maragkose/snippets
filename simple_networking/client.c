@@ -11,8 +11,11 @@ int main(int argc, char const *argv[])
     struct sockaddr_in address; 
     int sock = 0, valread; 
     struct sockaddr_in serv_addr; 
+    struct hostent *host;
+
     char *hello = "Hello from client"; 
     char buffer[1024] = {0}; 
+
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
     { 
         printf("\n Socket creation error \n"); 
@@ -35,7 +38,10 @@ int main(int argc, char const *argv[])
     { 
         printf("\nConnection Failed \n"); 
         return -1; 
-    } 
+    }
+    host = gethostbyaddr((const char *)&servaddr.sin_addr.s_addr, sizeof(servaddr.sin_addr.s_addr), AF_INET);
+    printf("Connected to the server at %s (%s).\n", inet_ntoa(servaddr.sin_addr), (host ? host->h_name : ""));
+
     send(sock , hello , strlen(hello) , 0 ); 
     printf("Hello message sent\n"); 
     valread = read( sock , buffer, 1024); 
