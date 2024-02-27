@@ -1,0 +1,12 @@
+ syntax = "proto3";
+ option cc_enable_arenas = true;
+
+ package tcp;
+
+message Header {
+    fixed32 id = 1;
+    fixed32 length = 2;
+}
+message Message {
+    string data = 1;
+ }
